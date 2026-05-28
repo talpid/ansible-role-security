@@ -44,3 +44,4 @@
   when:
     - security_autoupdate_enabled
     - ansible_facts.distribution_major_version | int in [7, 8]
+      or (ansible_facts.distribution == 'Fedora' and ansible_facts.distribution_major_version | int >= 41)
