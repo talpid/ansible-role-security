@@ -9,6 +9,13 @@
 # SSH
 - include_tasks: ssh.yml
 
+- include_tasks: ssh-selinux.yml
+  when:
+    - ansible_facts.os_family == 'RedHat'
+    - ansible_facts.selinux is defined
+    - ansible_facts.selinux.status == 'enabled'
+    - ansible_facts.service_mgr == 'systemd'
+
 # Autoupdate
 - include_tasks: autoupdate-RedHat.yml
   when:

@@ -1,0 +1,40 @@
+---
+- name: Configure SELinux SSH port labeling.
+  community.general.seport:
+    ports: "{{ security_ssh_port }}"
+    proto: tcp
+    setype: ssh_port_t
+    state: present
+  when:
+    - security_ssh_port | int != 22
+
+- name: Gather current firewalld services.
+  ansible.posix.firewalld_info:
+    active_zones: true
+  register: security_firewalld_info
+
+- name: Ensure custom SSH port is allowed in firewalld.
+  ansible.posix.firewalld:
+    zone: "{{ item.key }}"
+    port: "{{ security_ssh_port }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ security_firewalld_info.firewalld_info.zones | dict2items }}"
+  when:
+    - security_firewalld_info.firewalld_info is defined
+    - item.value.target is defined
+
+- name: Remove default SSH service from firewalld when using a custom port.
+  ansible.posix.firewalld:
+    zone: "{{ item.key }}"
+    service: ssh
+    permanent: true
+    immediate: true
+    state: disabled
+  loop: "{{ security_firewalld_info.firewalld_info.zones | dict2items }}"
+  when:
+    - security_ssh_port | int != 22
+    - security_firewalld_info.firewalld_info is defined
+    - item.value.services is defined
+    - "'ssh' in item.value.services"
