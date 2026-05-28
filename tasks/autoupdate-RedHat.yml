@@ -8,6 +8,17 @@
     - ansible_facts.distribution == 'Fedora'
     - ansible_facts.distribution_major_version | int >= 41
 
+- name: Ensure dnf5 automatic config exists (Fedora >= 41).
+  copy:
+    src: /usr/share/dnf5/dnf5-plugins/automatic.conf
+    dest: /etc/dnf/automatic.conf
+    remote_src: true
+    mode: '0644'
+    force: false
+  when:
+    - ansible_facts.distribution == 'Fedora'
+    - ansible_facts.distribution_major_version | int >= 41
+
 - name: Set correct automatic update utility vars (RHEL >= 8).
   set_fact:
     update_utility: dnf-automatic
@@ -43,5 +54,4 @@
     mode: 0644
   when:
     - security_autoupdate_enabled
-    - ansible_facts.distribution_major_version | int in [7, 8]
-      or (ansible_facts.distribution == 'Fedora' and ansible_facts.distribution_major_version | int >= 41)
+    - ansible_facts.distribution_major_version | int in [7, 8] or (ansible_facts.distribution == 'Fedora' and ansible_facts.distribution_major_version | int >= 41)
